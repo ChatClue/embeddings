@@ -1,6 +1,6 @@
 {
   "name": "embeddings",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Structure ambiguous data into discrete question:answer pairs and generate associated embeddings for similarity querying via Faiss or similar.",
   "main": "embeddings.js",
   "scripts": {

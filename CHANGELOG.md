@@ -1,9 +1,9 @@
 ## [Unreleased]
 
-## [1.0.0] - 2023-05-05
+## [0.1.0] - 2023-05-05
 
 - Initial release
 
-## [1.0.1] - 2023-05-05
+## [0.1.2] - 2023-05-05
 
--  Ensure access token is sent in querystring for get requests.
+-  Proivde code completion in answer values.
