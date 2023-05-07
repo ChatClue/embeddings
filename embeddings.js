@@ -67,24 +67,33 @@ class Embeddings {
   extractText(html) {
     const $ = cheerio.load(html);
     $("script, style").remove();
-    return $.text();
+    const text = $.text().replace(/\s+/g, ' ').trim();
+    return text;
   }
 
   async processText(text) {
-    const maxTokens = 2000;
+    const maxTokens = 800;
     const textChunks = this.splitTextIntoChunks(text, maxTokens);
   
     let allQaPairs = [];
   
     for (const chunk of textChunks) {
-      const prompt = `Process the following text into a list of question-answer pairs in JSON format:\n\n${chunk}\n\nQuestion-answer pairs:`;
+      const prompt = `Process the following text into a list of question-answer pairs in JSON format, like: [{"question": "this is the question", "answer": "this is the answer"}]. If the answer is associated with coding, provide an example (do not use double quotes or newlines in the answer values). Return only valid JSON in your response:\n\n${chunk}\n\nQuestion-answer pairs valid JSON:`;
       const completion = await this.openaiCall(prompt, "/v1/completions", null);
-      const qaPairs = JSON.parse(completion.trim());
+  
+      // Escape double quotes only within code examples
+      const escapedCompletion = completion.trim().replace(/(```[\s\S]*?```)/g, (match) => {
+        return match.replace(/(?<=^```[^`]*)(?<!\\)"/gm, '\\"');
+      });
+  
+      // Parse the escaped JSON string
+      const qaPairs = JSON.parse(escapedCompletion);
       allQaPairs = allQaPairs.concat(qaPairs);
     }
   
     return allQaPairs;
   }
+  
   
   splitTextIntoChunks(text, maxTokens) {
     const words = text.split(/\s+/);
