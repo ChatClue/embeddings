@@ -10,4 +10,8 @@
 
 ## [1.0.0] - 2023-05-07
 
-- Implement generateFromUrls to allow full scraping through screenshots-pagepixels package of webpage HTML and to generate question:answer pairs and embeddings from the webpage content. Updates constructor to pass an options hash and includes additional refinement options and verbose flag. This version is not backward compatible with previous versions.
+-  Implement generateFromUrls to allow full scraping through screenshots-pagepixels package of webpage HTML and to generate question:answer pairs and embeddings from the webpage content. Updates constructor to pass an options hash and includes additional refinement options and verbose flag. This version is not backward compatible with previous versions.
+
+## [1.0.1] - 2023-05-07
+
+-  Provides additional clarity and examples to the readme.
