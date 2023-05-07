@@ -1,13 +1,19 @@
 const cheerio = require("cheerio");
 const https = require("https");
 const wordCount = require("word-count");
+const ScreenshotsPagepixels = require("screenshots-pagepixels");
 
 class Embeddings {
-  constructor(apiKey, embeddingModel = "text-embedding-ada-002", completionModel = "text-davinci-003", completionModelOptions = { max_tokens: 2000, n: 1, stop: null, temperature: 0.7 }) {
-    this.apiKey = apiKey;
-    this.embeddingModel = embeddingModel;
-    this.completionModel = completionModel;
-    this.completionModelOptions = completionModelOptions;
+  constructor(options) {
+    this.apiKey = options.apiKey;
+    this.embeddingModel = options.embeddingModel || "text-embedding-ada-002";
+    this.completionModel = options.completionModel || "text-davinci-003";
+    this.completionModelOptions = options.completionModelOptions || { max_tokens: 2000, n: 1, stop: null, temperature: 0.7 };
+    this.screenshotApiKey = options.screenshotApiKey;
+    this.screenshotOptions = options.screenshotOptions || {};
+    this.chunkMaxTokens = options.chunkMaxTokens || 800;
+    this.promptRefinement = options.promptRefinement || "";
+    this.verbose = options.verbose || false;
   }
 
   async openaiCall(prompt, url, model = null) {
@@ -65,32 +71,47 @@ class Embeddings {
   }  
 
   extractText(html) {
+    if(this.verbose){ console.log("extracting text"); }
     const $ = cheerio.load(html);
-    $("script, style").remove();
-    const text = $.text().replace(/\s+/g, ' ').trim();
+    $("script, style, link").remove(); // remove script, style, and link tags
+    const text = $('body').text().replace(/\s+/g, ' ').trim(); // extract text only from body element
+    if(this.verbose){ console.log(text); }
     return text;
   }
 
-  async processText(text) {
-    const maxTokens = 800;
+  async processText(text, url=undefined) {
+    const maxTokens = this.chunkMaxTokens;
     const textChunks = this.splitTextIntoChunks(text, maxTokens);
-  
+
     let allQaPairs = [];
-  
+
     for (const chunk of textChunks) {
-      const prompt = `Process the following text into a list of question-answer pairs in JSON format, like: [{"question": "this is the question", "answer": "this is the answer"}]. If the answer is associated with coding, provide an example (do not use double quotes or newlines in the answer values). Return only valid JSON in your response:\n\n${chunk}\n\nQuestion-answer pairs valid JSON:`;
+      if(this.verbose){ console.log("Calling OpenAI to process chunk"); }
+      console.log("Chunk: ", chunk)
+      const prompt = `Process the following text into a list of question-answer pairs associated with the relevant content on the page, like: [{"question": "this is the question", "answer": "this is the answer"}]. ${this.promptRefinement}. Return only valid JSON in your response:\n\n${chunk}\n\nQuestion-answer pairs valid JSON:`;
       const completion = await this.openaiCall(prompt, "/v1/completions", null);
-  
+      if(this.verbose){ console.log("Processing Text"); }
       // Escape double quotes only within code examples
       const escapedCompletion = completion.trim().replace(/(```[\s\S]*?```)/g, (match) => {
         return match.replace(/(?<=^```[^`]*)(?<!\\)"/gm, '\\"');
       });
-  
+      if(this.verbose){ console.log("Escaped Completion: ", escapedCompletion); }
+
       // Parse the escaped JSON string
-      const qaPairs = JSON.parse(escapedCompletion);
-      allQaPairs = allQaPairs.concat(qaPairs);
+      try{
+        let qaPairs = JSON.parse(escapedCompletion);
+        
+        // Add the URL key to each qaPair
+        if(url){
+          qaPairs = qaPairs.map(qaPair => ({ ...qaPair, url }));
+        }
+        if(this.verbose){ console.log(qaPairs); }
+        allQaPairs = allQaPairs.concat(qaPairs);
+      } catch (error) {
+        console.error("Error parsing JSON returned by OpenAI:", error);
+      }
     }
-  
+
     return allQaPairs;
   }
   
@@ -123,6 +144,7 @@ class Embeddings {
   }
 
   async generateEmbeddings(qaPairs) {
+    if(this.verbose){ console.log("Generating Embeddings"); }
     const generateEmbeddingForText = async (text) => {
       try {
         const embedding = await this.openaiCall(text, "/v1/embeddings", "text-embedding-ada-002");
@@ -142,6 +164,7 @@ class Embeddings {
         embeddings.push({
           question,
           answer: qaPair.answer,
+          url: qaPair.url,
           embedding,
         });
       }
@@ -150,12 +173,31 @@ class Embeddings {
     return embeddings;
   }
 
-  async generate(text) {
+  async generateFromText(text) {
     const extractedText = this.extractText(text);
     const qaPairs = await this.processText(extractedText);
     const embeddingsResult = await this.generateEmbeddings(qaPairs);
     return embeddingsResult;
   }
+
+  async generateFromUrls(urls) {
+    const pagepixels = new ScreenshotsPagepixels(this.screenshotApiKey);
+    const htmlPromises = urls.map(async (url) => {
+      console.log("processing", url)
+      const options = { url, html_only: true, ...this.screenshotOptions };
+      const html = await pagepixels.snap(options);
+      return JSON.parse(html).html;
+    });
+
+    const htmlResults = await Promise.all(htmlPromises);
+    const textResults = htmlResults.map((html) => this.extractText(html));
+    const qaPairsResults = await Promise.all(textResults.map((text, index) => this.processText(text, urls[index])));
+    const embeddingsResults = await Promise.all(qaPairsResults.map((qaPairs) => this.generateEmbeddings(qaPairs)));
+
+    const flatEmbeddingsResults = [].concat(...embeddingsResults);
+    return flatEmbeddingsResults;
+  }
+
 }
 
 module.exports = Embeddings;
