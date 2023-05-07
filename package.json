@@ -1,6 +1,6 @@
 {
   "name": "embeddings",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Structure ambiguous data into discrete question:answer pairs and generate associated embeddings for similarity querying via Faiss or similar.",
   "main": "embeddings.js",
   "scripts": {
@@ -26,6 +26,6 @@
   "homepage": "https://github.com/ChatClue/embeddings#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
-    "tokenizers": "^0.12.0"
+    "word-count": "^0.2.2"
   }
 }
