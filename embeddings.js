@@ -143,23 +143,24 @@ class Embeddings {
     return chunks;
   }
 
+  async generateEmbeddingForText(text) {
+    try {
+      const embedding = await this.openaiCall(text, "/v1/embeddings", this.embeddingModel);
+      return embedding;
+    } catch (error) {
+      console.error("Error generating embedding:", error);
+      return null;
+    }
+  }
+
   async generateEmbeddings(qaPairs) {
     if(this.verbose){ console.log("Generating Embeddings"); }
-    const generateEmbeddingForText = async (text) => {
-      try {
-        const embedding = await this.openaiCall(text, "/v1/embeddings", "text-embedding-ada-002");
-        return embedding;
-      } catch (error) {
-        console.error("Error generating embedding:", error);
-        return null;
-      }
-    };
 
     // Generate embeddings for all questions
     const embeddings = [];
     for (const qaPair of qaPairs) {
       const question = qaPair.question;
-      const embedding = await generateEmbeddingForText(question);
+      const embedding = await this.generateEmbeddingForText(question);
       if (embedding) {
         embeddings.push({
           question,
