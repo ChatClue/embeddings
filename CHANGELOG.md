@@ -19,3 +19,7 @@
 ## [1.1.0] - 2023-05-07
 
 -  Ensure embedding model configuration is properly set and implement generateEmbeddingForText as a standalone function.
+
+## [2.0.0] - 2023-05-07
+
+-  Make the method names more descriptive and provide additional documentation in readme.  This version is not backward compatible with previous verisons.

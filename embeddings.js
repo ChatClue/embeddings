@@ -79,7 +79,7 @@ class Embeddings {
     return text;
   }
 
-  async processText(text, url=undefined) {
+  async generateQaPairsFromText(text, url=undefined) {
     const maxTokens = this.chunkMaxTokens;
     const textChunks = this.splitTextIntoChunks(text, maxTokens);
 
@@ -153,7 +153,7 @@ class Embeddings {
     }
   }
 
-  async generateEmbeddings(qaPairs) {
+  async generateQaEmbeddingsFromQaPairs(qaPairs) {
     if(this.verbose){ console.log("Generating Embeddings"); }
 
     // Generate embeddings for all questions
@@ -174,14 +174,14 @@ class Embeddings {
     return embeddings;
   }
 
-  async generateFromText(text) {
+  async generateQaEmbeddingsFromText(text) {
     const extractedText = this.extractText(text);
-    const qaPairs = await this.processText(extractedText);
-    const embeddingsResult = await this.generateEmbeddings(qaPairs);
+    const qaPairs = await this.generateQaPairsFromText(extractedText);
+    const embeddingsResult = await this.generateQaEmbeddingsFromQaPairs(qaPairs);
     return embeddingsResult;
   }
 
-  async generateFromUrls(urls) {
+  async generateQaEmbeddingsFromUrls(urls) {
     const pagepixels = new ScreenshotsPagepixels(this.screenshotApiKey);
     const htmlPromises = urls.map(async (url) => {
       console.log("processing", url)
@@ -192,8 +192,8 @@ class Embeddings {
 
     const htmlResults = await Promise.all(htmlPromises);
     const textResults = htmlResults.map((html) => this.extractText(html));
-    const qaPairsResults = await Promise.all(textResults.map((text, index) => this.processText(text, urls[index])));
-    const embeddingsResults = await Promise.all(qaPairsResults.map((qaPairs) => this.generateEmbeddings(qaPairs)));
+    const qaPairsResults = await Promise.all(textResults.map((text, index) => this.generateQaPairsFromText(text, urls[index])));
+    const embeddingsResults = await Promise.all(qaPairsResults.map((qaPairs) => this.generateQaEmbeddingsFromQaPairs(qaPairs)));
 
     const flatEmbeddingsResults = [].concat(...embeddingsResults);
     return flatEmbeddingsResults;
