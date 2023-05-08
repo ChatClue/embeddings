@@ -87,7 +87,7 @@ class Embeddings {
 
     for (const chunk of textChunks) {
       if(this.verbose){ console.log("Calling OpenAI to process chunk"); }
-      console.log("Chunk: ", chunk)
+      if(this.verbose) console.log("Chunk: ", chunk)
       const prompt = `Process the following text into a list of question-answer pairs associated with the relevant content on the page, like: [{"question": "this is the question", "answer": "this is the answer"}]. ${this.promptRefinement}. Return only valid JSON in your response:\n\n${chunk}\n\nQuestion-answer pairs valid JSON:`;
       const completion = await this.openaiCall(prompt, "/v1/completions", null);
       if(this.verbose){ console.log("Processing Text"); }

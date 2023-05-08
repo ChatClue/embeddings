@@ -27,3 +27,7 @@
 ## [2.0.1]
 
 -  Fix verbose log.
+
+## [2.0.2]
+
+-  Fix verbose Log
