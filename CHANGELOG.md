@@ -23,3 +23,7 @@
 ## [2.0.0] - 2023-05-07
 
 -  Make the method names more descriptive and provide additional documentation in readme.  This version is not backward compatible with previous verisons.
+
+## [2.0.1]
+
+-  Fix verbose log.

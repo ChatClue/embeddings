@@ -184,7 +184,7 @@ class Embeddings {
   async generateQaEmbeddingsFromUrls(urls) {
     const pagepixels = new ScreenshotsPagepixels(this.screenshotApiKey);
     const htmlPromises = urls.map(async (url) => {
-      console.log("processing", url)
+      if(this.verbose) console.log("processing", url);
       const options = { url, html_only: true, ...this.screenshotOptions };
       const html = await pagepixels.snap(options);
       return JSON.parse(html).html;
