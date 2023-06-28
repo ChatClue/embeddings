@@ -26,7 +26,7 @@
   "homepage": "https://github.com/ChatClue/embeddings#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
-    "word-count": "^0.2.2",
-    "screenshots-pagepixels": "~0.1.0"
+    "gpt-3-encoder": "^1.1.4",
+    "screenshots-pagepixels": "~1.0.0"
   }
 }
