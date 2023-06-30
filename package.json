@@ -27,6 +27,6 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
     "word-count": "^0.2.2",
-    "screenshots-pagepixels": "~0.1.0"
+    "screenshots-pagepixels": "~1.0.0"
   }
 }
