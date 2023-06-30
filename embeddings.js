@@ -120,9 +120,9 @@ class Embeddings {
     const tokens = GPTEncoder.encode(text)
     const chunks = [];
 
-    while(tokens.length > 0) {
+    for(let token = 0; token < tokens.length; token += maxTokens) {
       chunks.push(
-        GPTEncoder.decode(tokens.splice(0, maxTokens))
+        GPTEncoder.decode(tokens.slice(token, token + maxTokens))
       )
     }
   
