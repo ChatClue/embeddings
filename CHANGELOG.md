@@ -31,3 +31,7 @@
 ## [2.0.2]
 
 -  Fix verbose Log
+
+## [2.0.3]
+
+-  Fixed PagePixels dependency version
