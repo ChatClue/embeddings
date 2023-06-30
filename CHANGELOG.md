@@ -35,3 +35,7 @@
 ## [2.0.3]
 
 -  Fixed PagePixels dependency version
+
+## [2.0.4]
+
+-  Implement true tokenization for chunks using gpt-3-encoder.
