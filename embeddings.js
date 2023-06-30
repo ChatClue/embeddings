@@ -1,6 +1,6 @@
 const cheerio = require("cheerio");
 const https = require("https");
-const wordCount = require("word-count");
+const GPTEncoder = require('gpt-3-encoder')
 const ScreenshotsPagepixels = require("screenshots-pagepixels");
 
 class Embeddings {
@@ -117,27 +117,25 @@ class Embeddings {
   
   
   splitTextIntoChunks(text, maxTokens) {
-    const words = text.split(/\s+/);
+    const tokens = GPTEncoder.encode(text)
     const chunks = [];
   
-    let currentChunkWords = [];
-    let currentWordCount = 0;
+    let currentChunkTokens = [];
+    let currentTokenCount = 0;
   
-    for (const word of words) {
-      const wordLength = wordCount(word);
-  
-      if (currentWordCount + wordLength > maxTokens) {
-        chunks.push(currentChunkWords.join(" "));
-        currentChunkWords = [];
-        currentWordCount = 0;
+    for (const token of tokens) {  
+      if (currentTokenCount + 1 > maxTokens) {
+        chunks.push(currentChunkTokens.join(""));
+        currentChunkTokens = [];
+        currentTokenCount = 0;
       }
   
-      currentChunkWords.push(word);
-      currentWordCount += wordLength;
+      currentChunkTokens.push(GPTEncoder.decode([token]));
+      currentTokenCount += 1;
     }
   
-    if (currentChunkWords.length > 0) {
-      chunks.push(currentChunkWords.join(" "));
+    if (currentChunkTokens.length > 0) {
+      chunks.push(currentChunkTokens.join(""));
     }
   
     return chunks;
