@@ -119,23 +119,11 @@ class Embeddings {
   splitTextIntoChunks(text, maxTokens) {
     const tokens = GPTEncoder.encode(text)
     const chunks = [];
-  
-    let currentChunkTokens = [];
-    let currentTokenCount = 0;
-  
-    for (const token of tokens) {  
-      if (currentTokenCount + 1 > maxTokens) {
-        chunks.push(currentChunkTokens.join(""));
-        currentChunkTokens = [];
-        currentTokenCount = 0;
-      }
-  
-      currentChunkTokens.push(GPTEncoder.decode([token]));
-      currentTokenCount += 1;
-    }
-  
-    if (currentChunkTokens.length > 0) {
-      chunks.push(currentChunkTokens.join(""));
+
+    while(tokens.length > 0) {
+      chunks.push(
+        GPTEncoder.decode(tokens.splice(0, maxTokens))
+      )
     }
   
     return chunks;
