@@ -39,3 +39,7 @@
 ## [2.0.4]
 
 -  Implement true tokenization for chunks using gpt-3-encoder.
+
+## [2.0.5] 2023-07-14
+
+-  Optimize splitTextIntoChunks method.
